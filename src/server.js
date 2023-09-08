@@ -9,91 +9,45 @@ dotenv.config();
 const app = express();
 
 app.use(cors());
-app.set('view engine','ejs')
-
-function evaluate(expressionTokens) {
-  const operations = ['plus', 'minus', 'into', 'div'];
-  const precedence = {
-      'plus': 1,
-      'minus': 1,
-      'into': 2,
-      'div': 2,
-  };
-
-  const output = [];
-  const opsStack = [];
-
-  for (const token of expressionTokens) {
-      if (!operations.includes(token)) {
-          output.push(parseFloat(token));
-      } else {
-          while (
-              opsStack.length > 0 &&
-              precedence[opsStack[opsStack.length - 1]] >= precedence[token]
-          ) {
-              output.push(opsStack.pop());
-          }
-          opsStack.push(token);
-      }
-  }
-
-  while (opsStack.length > 0) {
-      output.push(opsStack.pop());
-  }
-
-  const resultStack = [];
-  for (const token of output) {
-      if (!isNaN(token)) {
-          resultStack.push(token);
-      } else {
-          const operand2 = resultStack.pop();
-          const operand1 = resultStack.pop();
-          switch (token) {
-              case 'plus':
-                  resultStack.push(operand1 + operand2);
-                  break;
-              case 'minus':
-                  resultStack.push(operand1 - operand2);
-                  break;
-              case 'into':
-                  resultStack.push(operand1 * operand2);
-                  break;
-              case 'div':
-                  resultStack.push(operand1 / operand2);
-                  break;
-              default:
-                  throw new Error('Invalid operator');
-          }
-      }
-  }
-
-  return resultStack[0];
-}
-
-
-app.get('/calculate/*', (req, res) => {
-    const p = req.params[0]; 
-    const t = p.split('/'); 
-    try {
-        const sol = evaluate(t); 
-        const wholeExpression = t.join(' ');
-        const operation = new Operations({question: wholeExpression, result: sol});
-        operation.save();
-        res.send(`Result: ${sol}`); 
-    } catch (error) {
-        console.log(error);
-        res.status(400).send(error.message); 
-    }
-});
-
-app.get('/history',async(req,res)=>{
-  const historyOperations=await Operations.find({}).sort({ _id: -1 }).limit(20);
-  console.log(historyOperations)
-  res.render('history.ejs',{historyOperations:historyOperations})
+// app.set('view engine','ejs')
+ConnectDB()
+app.get("/bfhl", (req, res) => {
+    res.status(200).json({
+        operation_code: 1
+    })
 })
 
-app.get("/home",(req,res)=>{
-  res.render('index.ejs')
+app.post("/test", (req, res) => {
+    try {
+        console.log(req.body)
+        // const data = new Operations({
+        //     status: true,
+        //     userid: req.body.user_id,
+        //     email: req.body.email,
+        //     rollno: req.body.roll_number,
+        //     number: req.body.number,
+        //     alphabets: req.body.aplhabets,
+        //     highestalphabet: req.body.alphabet[0]
+        // })
+        // res.json({
+        //     user_id: req.body.user_id,
+        //     is_success: true,
+        //     email: req.body.email,
+        //     roll_number: req.body.roll_number,
+        //     numbers: req.body.numbers,
+        //     alphabets: req.body.alphabets,
+        //     highest_alphabet: req.body.alphabet[0]
+        // })
+        res.status(200).json({
+            operation_code: 1
+        })
+    } catch(error) {
+        res.json({
+            user_id: req.body.user_id,
+            is_success: false
+        })
+    }
+
 })
 
 const PORT = process.env.PORT || 3000; 
